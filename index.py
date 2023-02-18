@@ -4,6 +4,8 @@ import nltk
 import sys
 import getopt
 
+from inverted_index import InvertedIndex
+
 def usage():
     print("usage: " + sys.argv[0] + " -i directory-of-documents -d dictionary-file -p postings-file")
 
@@ -15,6 +17,7 @@ def build_index(in_dir, out_dict, out_postings):
     print('indexing...')
     # This is an empty method
     # Pls implement your code in below
+    InvertedIndex(in_dir, out_dict, out_postings).construct()
 
 input_directory = output_file_dictionary = output_file_postings = None
 
