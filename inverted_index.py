@@ -33,7 +33,7 @@ class InvertedIndex:
         block_index = 0
         mem_line = 0
         curr_doc_num = 0
-        total_doc_num = 1
+        total_doc_num = 5
 
         all_doc_ids = []
         for doc_id in os.listdir(self.in_dir):
@@ -55,14 +55,12 @@ class InvertedIndex:
             for line in file:
                 for sentence_token in sent_tokenize(line):
                     for word_token in word_tokenize(sentence_token):
-                        # ignore if number
-                        if word_token.isnumeric():
-                            continue
-
                         # remove punctuation and digit, stem and case-folding
-                        word_token = stemmer.stem(word_token.translate(remove_punctuation).translate(remove_digit)).lower()
+                        word_token = stemmer.stem(
+                            word_token.translate(remove_punctuation).translate(remove_digit)).lower()
 
-                        if len(word_token) == 0:
+                        # remove numbers, stop words or empty strings
+                        if word_token.isnumeric() or word_token in stop_words or len(word_token) == 0:
                             continue
 
                         # add word_token into list of terms
@@ -75,15 +73,15 @@ class InvertedIndex:
 
                         # add word_token into posting list
                         if word_token not in postings:
-                            print("word token not in posting")
+                            print("add word token into posting")
                             postings[word_token] = list()
                             postings[word_token].append(doc_id)
                         else :
                             if doc_id not in postings[word_token]:
-                                print("add doc_id: ", doc_id)
+                                print("add new doc_id into posting: ", doc_id)
                                 postings[word_token].append(doc_id)
 
-                        
+                        # if max lines in mem reached, write block to disk
                         if mem_line == self.MAX_LINES_IN_MEM:
                             terms.sort()
                             self.write_block_to_disk(block_index, terms, postings)
@@ -102,9 +100,9 @@ class InvertedIndex:
             self.write_block_to_disk(block_index, terms, postings)
             # print("sorted terms: ", terms)
             print("adding remaining lines...")
-            # merge_blocks()
+            self.merge_blocks(block_index + 1)
         else:
-            # merge_blocks()
+            self.merge_blocks(block_index)
             print("no remaining line...")
         
     def write_block_to_disk(self, block_index, terms, postings):
@@ -124,7 +122,9 @@ class InvertedIndex:
             f.close()
 
 
+    def merge_blocks(self, total_num_blocks):
+        print("merging ", total_num_blocks, " numbers of blocks...")
 
-
+        
 
     
