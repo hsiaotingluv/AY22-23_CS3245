@@ -5,8 +5,7 @@ import string
 import time
 
 from queue import PriorityQueue
-from math import sqrt
-from math import ceil, floor
+from math import sqrt, floor
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.tokenize import sent_tokenize
@@ -21,6 +20,23 @@ class InvertedIndex:
         self.in_dir = in_dir
         self.out_dict = out_dict
         self.out_postings = out_postings
+    
+    def get_all_doc_ids(self):
+        curr_doc_num = 0
+        total_doc_num = 3
+
+        all_doc_ids = []
+        for doc_id in os.listdir(self.in_dir):
+            if (curr_doc_num == total_doc_num):
+                break
+            else:
+                all_doc_ids.append(int(doc_id))
+                curr_doc_num += 1
+        all_doc_ids.sort()
+
+        print("all doc id: ", all_doc_ids)
+
+        return all_doc_ids
     
     def construct(self):
         print("deleting previous test files...")
@@ -38,20 +54,7 @@ class InvertedIndex:
 
         block_index = 0
         mem_line = 0
-        curr_doc_num = 0
-        total_doc_num = 3
-
-        all_doc_ids = []
-        for doc_id in os.listdir(self.in_dir):
-            if (curr_doc_num == total_doc_num):
-                break
-            else:
-                all_doc_ids.append(int(doc_id))
-                curr_doc_num += 1
-        all_doc_ids.sort()
-
-        print("all doc id: ", all_doc_ids)
-
+        all_doc_ids = self.get_all_doc_ids()
         terms = list()
         postings = {} # key: term, value: list of doc_id
 
@@ -97,9 +100,6 @@ class InvertedIndex:
                             block_index += 1
                             terms = list()
                             postings = {} # key: term, value: list of doc_id
-
-        # print("terms: ", terms)
-        # print("postings: ", postings)
     
         if mem_line > 0:
             terms.sort()
@@ -126,8 +126,7 @@ class InvertedIndex:
             f = open(os.path.join("blocks", "block_" + str(block_index) + ".txt"), "w")
             f.write(result)
             f.close()
-
-
+    
     def merge_blocks(self, total_num_blocks):
         print("merging ", total_num_blocks, " numbers of blocks...")
         
@@ -137,22 +136,13 @@ class InvertedIndex:
         line_in_mem_per_block = [0] * total_num_blocks
         # total number of lines loaded from each block at each time
         lines_to_read = max(1, floor(self.MAX_LINES_IN_MEM / total_num_blocks))
-
-        queue = PriorityQueue() # item = [term, postings, block_index]
+        # item = [term, postings, block_index]
+        queue = PriorityQueue() 
         
         # load first set of lines from all blocks and add to queue
         for block_index in range (0, total_num_blocks):
             newLines_list = self.read_block(block_index, start_offset_per_block, lines_to_read)
-
-            for line in newLines_list:
-                # start_offset_per_block[block_index] += len(line) + 1 # add 1 for "\n"
-                line_in_mem_per_block[block_index] += 1
-
-                term_postings = line.split(" ", 1)
-                term = term_postings[0]
-                postings = term_postings[1]
-                print("added to queue: ", [term, postings, block_index]) 
-                queue.put([term, postings, block_index])
+            queue = self.add_list_to_queue(newLines_list, line_in_mem_per_block, block_index, queue)
             
             print("start offset per block: ", start_offset_per_block)
             print("line in mem per block: ", line_in_mem_per_block)
@@ -163,6 +153,7 @@ class InvertedIndex:
         final_postings = "" # term docIDs...
         posting_ref = 0
         line_in_mem = 0
+        last_unique_term = False
 
         while not queue.empty():
             item = queue.get()
@@ -185,65 +176,35 @@ class InvertedIndex:
                         accumulated_postings.extend(curr_postings)
                 print("accumulated posting: ", accumulated_postings, " for term ", curr_term)
 
-            # if new term, append to final dictionary and postings
-            
-            if (curr_term != prev_term or queue.empty()):
+            # if new term, append previous term to final dictionary and postings
+            if (curr_term != prev_term):
                 print("appending to final dictionary and postings...")
                 print("queue is empty: ", queue.empty())
-
-                # for doc_id in curr_postings:
-                #     if doc_id not in accumulated_postings:
-                #         accumulated_postings.extend(curr_postings)
                 print("accumulated posting: ", accumulated_postings, " for term ", prev_term)
 
-                # term freq posting_ref
-                new_dictionary_line = prev_term + " " + str(len(accumulated_postings)) + " " + str(posting_ref) + "\n"
-                # term DocIDs...
-                new_posting_line = prev_term + " " + ' '.join(accumulated_postings) + "\n"
-
-                # append to final dictionary and postings
-                final_dictionary += new_dictionary_line
-                final_postings += new_posting_line
-                posting_ref += len(new_posting_line)
+                new_dictionary_posting_line = self.new_line(prev_term, accumulated_postings, posting_ref)
+                final_dictionary += new_dictionary_posting_line[0]
+                final_postings += new_dictionary_posting_line[1]
+                posting_ref += len(new_dictionary_posting_line[1])
                 line_in_mem += 1
-                
+
                 # reset values
                 prev_term = curr_term
                 accumulated_postings = curr_postings
 
+                if (queue.empty()):
+                    last_unique_term = True
+
                 print("final dictionary: ", final_dictionary)
                 print("final postings: ", final_postings)
-
-                # if curr_term is last element, write out into dictionary and postings file
-                if (queue.empty()):
-                    new_dictionary_line = curr_term + " " + str(len(curr_postings)) + " " + str(posting_ref) + "\n"
-                    # term DocIDs...
-                    new_posting_line = curr_term + " " + ' '.join(curr_postings) + "\n"
-
-                    # append to final dictionary and postings
-                    final_dictionary += new_dictionary_line
-                    final_postings += new_posting_line
-
-                    print("writing to output files...")
-                    self.write_block(self.out_dict, final_dictionary)
-                    self.write_block(self.out_postings, final_postings)
                 
             # load another set of lines into queue
             if (line_in_mem_per_block[curr_block_index] == 0):
                 print("loading ", str(lines_to_read), " lines from block ", str(curr_block_index), "...")
 
                 newLines_list = self.read_block(curr_block_index, start_offset_per_block, lines_to_read)
+                queue = self.add_list_to_queue(newLines_list, line_in_mem_per_block, curr_block_index, queue)
 
-                for line in newLines_list:
-                    # start_offset_per_block[block_index] += len(line) + 1 # add 1 for "\n"
-                    line_in_mem_per_block[curr_block_index] += 1
-
-                    new_term_postings = line.split(" ", 1)
-                    new_term = new_term_postings[0]
-                    new_postings = new_term_postings[1]
-                    print("added to queue: ", [new_term, new_postings, curr_block_index]) 
-                    queue.put([new_term, new_postings, curr_block_index])
-                
                 print("start offset per block: ", start_offset_per_block)
                 print("line in mem per block: ", line_in_mem_per_block)
 
@@ -257,6 +218,17 @@ class InvertedIndex:
                 line_in_mem = 0
                 final_dictionary = "" 
                 final_postings = ""
+
+        # append last unique term to final dictionary and postings
+        if (last_unique_term):
+            new_dictionary_posting_line = self.new_line(curr_term, curr_postings, posting_ref)
+            final_dictionary += new_dictionary_posting_line[0]
+            final_postings += new_dictionary_posting_line[1]
+
+        # write out into final dictionary and postings
+        print("writing to output files...")
+        self.write_block(self.out_dict, final_dictionary)
+        self.write_block(self.out_postings, final_postings)
 
     # read and return lines_to_read number of lines in block with block_index
     def read_block(self, block_index, start_offset_per_block, lines_to_read):
@@ -276,7 +248,7 @@ class InvertedIndex:
                 break
             lines.append(line)
         
-        start_offset_per_block[block_index] = f.tell() + 1
+        start_offset_per_block[block_index] = f.tell() + 1 # add 1 for "\n"
         
         f.close()
         print("lines read: ", lines)
@@ -294,4 +266,25 @@ class InvertedIndex:
         os.remove("dictionary.txt")
         os.remove("postings.txt")
 
+    def add_list_to_queue(self, newLines_list, line_in_mem_per_block, block_index, queue):
+        for line in newLines_list:
+                line_in_mem_per_block[block_index] += 1
+                term_postings = line.split(" ", 1)
+                term = term_postings[0]
+                postings = term_postings[1]
+                print("added to queue: ", [term, postings, block_index]) 
+                queue.put([term, postings, block_index])
+        return queue
     
+    def new_line(self, prev_term, accumulated_postings, posting_ref):
+        # term freq posting_ref
+        new_dictionary_line = prev_term + " " + str(len(accumulated_postings)) + " " + str(posting_ref) + "\n"
+    
+        # term DocIDs...
+        new_posting_line = prev_term + " " + ' '.join(accumulated_postings) + "\n"
+
+        return [new_dictionary_line, new_posting_line]
+    
+        
+
+        
