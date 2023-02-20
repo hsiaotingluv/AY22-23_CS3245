@@ -12,10 +12,12 @@ from nltk.tokenize import sent_tokenize
 from nltk.stem.porter import PorterStemmer
 
 class InvertedIndex:
-    MAX_LINES_IN_MEM = 1000
+    # max 10000 number of terms in memory
+    # TODO: check how to set max memory
+    MAX_LINES_IN_MEM = 10000
 
     def __init__(self, in_dir, out_dict, out_postings):
-        print("initialising inverted index...")
+        # print("initialising inverted index...")
 
         self.in_dir = in_dir
         self.out_dict = out_dict
@@ -23,7 +25,7 @@ class InvertedIndex:
     
     def get_all_doc_ids(self):
         curr_doc_num = 0
-        total_doc_num = 20
+        total_doc_num = 7770
 
         all_doc_ids = []
         for doc_id in os.listdir(self.in_dir):
@@ -34,18 +36,18 @@ class InvertedIndex:
                 curr_doc_num += 1
         all_doc_ids.sort()
 
-        print("all doc id: ", all_doc_ids)
+        # print("all doc id: ", all_doc_ids)
 
         return all_doc_ids
     
     def construct(self):
-        print("deleting previous test files...")
+        # print("deleting previous test files...")
         self.delete_test_files
 
         if not os.path.exists("blocks"):
             os.makedirs("blocks")
 
-        print("constructing index...")
+        # print("constructing index...")
 
         stemmer = PorterStemmer()
         stop_words = set(stopwords.words('english'))
@@ -74,27 +76,27 @@ class InvertedIndex:
 
                         # add word_token into list of terms
                         if word_token not in terms:
-                            print("word token not in terms")
+                            # print("word token not in terms")
                             terms.append(word_token)
                             mem_line += 1
 
-                            print("mem line: ", mem_line)
+                            # print("mem line: ", mem_line)
 
                         # add word_token into posting list
                         if word_token not in postings:
-                            print("add word token into posting")
+                            # print("add word token into posting")
                             postings[word_token] = list()
                             postings[word_token].append(doc_id)
                         else :
                             if doc_id not in postings[word_token]:
-                                print("add new doc_id into posting: ", doc_id)
+                                # print("add new doc_id into posting: ", doc_id)
                                 postings[word_token].append(doc_id)
 
                         # if max lines in mem reached, write block to disk
                         if mem_line == self.MAX_LINES_IN_MEM:
                             terms.sort()
                             self.write_block_to_disk(block_index, terms, postings)
-                            print("Block " + str(block_index) + " created")
+                            # print("Block " + str(block_index) + " created")
                             
                             mem_line = 0
                             block_index += 1
@@ -104,31 +106,30 @@ class InvertedIndex:
         if mem_line > 0:
             terms.sort()
             self.write_block_to_disk(block_index, terms, postings)
-            # print("sorted terms: ", terms)
-            print("adding remaining lines...")
+            # print("adding remaining lines...")
             self.merge_blocks(block_index + 1)
         else:
             self.merge_blocks(block_index)
-            print("no remaining line...")
+            # print("no remaining line...")
         
     def write_block_to_disk(self, block_index, terms, postings):
-        print("terms write block to disk: ", terms)
+        # print("terms write block to disk: ", terms)
         result = ""
         if terms is not None:
-            print("writing terms...")
+            # print("writing terms...")
             for term in terms:
                 posting = ' '.join(str(i) for i in postings[term])
                 result += term + " " + posting + "\n"
 
-            print("terms: ", terms)
-            print("postings: ", postings)
+            # print("terms: ", terms)
+            # print("postings: ", postings)
 
             f = open(os.path.join("blocks", "block_" + str(block_index) + ".txt"), "w")
             f.write(result)
             f.close()
     
     def merge_blocks(self, total_num_blocks):
-        print("merging ", total_num_blocks, " numbers of blocks...")
+        # print("merging ", total_num_blocks, " numbers of blocks...")
         
         # off set of start line for each block
         start_offset_per_block = [0] * total_num_blocks
@@ -144,8 +145,8 @@ class InvertedIndex:
             newLines_list = self.read_block(block_index, start_offset_per_block, lines_to_read)
             queue = self.add_list_to_queue(newLines_list, line_in_mem_per_block, block_index, queue)
             
-            print("start offset per block: ", start_offset_per_block)
-            print("line in mem per block: ", line_in_mem_per_block)
+            # print("start offset per block: ", start_offset_per_block)
+            # print("line in mem per block: ", line_in_mem_per_block)
 
         prev_term = ""
         accumulated_postings = []
@@ -160,27 +161,27 @@ class InvertedIndex:
             curr_term = item[0]
             curr_postings = item[1].split()
             curr_block_index = item[2]
-            print("curr item: ", item)
+            # print("curr item: ", item)
 
             line_in_mem_per_block[curr_block_index] -= 1
 
             # append same term together
             if (prev_term == "" or prev_term == curr_term):
-                print("appending same term together...")
-                print("current term: ", curr_term)
-                print("previous term: ", prev_term)
+                # print("appending same term together...")
+                # print("current term: ", curr_term)
+                # print("previous term: ", prev_term)
 
                 prev_term = curr_term
                 for doc_id in curr_postings:
                     if doc_id not in accumulated_postings:
                         accumulated_postings.extend(curr_postings)
-                print("accumulated posting: ", accumulated_postings, " for term ", curr_term)
+                # print("accumulated posting: ", accumulated_postings, " for term ", curr_term)
 
             # if new term, append previous term to final dictionary and postings
             if (curr_term != prev_term):
-                print("appending to final dictionary and postings...")
-                print("queue is empty: ", queue.empty())
-                print("accumulated posting: ", accumulated_postings, " for term ", prev_term)
+                # print("appending to final dictionary and postings...")
+                # print("queue is empty: ", queue.empty())
+                # print("accumulated posting: ", accumulated_postings, " for term ", prev_term)
 
                 new_dictionary_posting_line = self.new_line(prev_term, accumulated_postings, posting_ref)
                 final_dictionary += new_dictionary_posting_line[0]
@@ -195,22 +196,22 @@ class InvertedIndex:
                 if (queue.empty()):
                     last_unique_term = True
 
-                print("final dictionary: ", final_dictionary)
-                print("final postings: ", final_postings)
+                # print("final dictionary: ", final_dictionary)
+                # print("final postings: ", final_postings)
                 
             # load another set of lines into queue
             if (line_in_mem_per_block[curr_block_index] == 0):
-                print("loading ", str(lines_to_read), " lines from block ", str(curr_block_index), "...")
+                # print("loading ", str(lines_to_read), " lines from block ", str(curr_block_index), "...")
 
                 newLines_list = self.read_block(curr_block_index, start_offset_per_block, lines_to_read)
                 queue = self.add_list_to_queue(newLines_list, line_in_mem_per_block, curr_block_index, queue)
 
-                print("start offset per block: ", start_offset_per_block)
-                print("line in mem per block: ", line_in_mem_per_block)
+                # print("start offset per block: ", start_offset_per_block)
+                # print("line in mem per block: ", line_in_mem_per_block)
 
             # write out into dictionary and postings file
             if (line_in_mem == self.MAX_LINES_IN_MEM):
-                print("writing to output files...")
+                # print("writing to output files...")
                 self.write_block(self.out_dict, final_dictionary)
                 self.write_block(self.out_postings, final_postings)
 
@@ -226,7 +227,7 @@ class InvertedIndex:
             final_postings += new_dictionary_posting_line[1]
 
         # write out into final dictionary and postings
-        print("writing to output files...")
+        # print("writing to output files...")
         self.write_block(self.out_dict, final_dictionary)
         self.write_block(self.out_postings, final_postings)
 
@@ -251,7 +252,7 @@ class InvertedIndex:
         start_offset_per_block[block_index] = f.tell() + 1 # add 1 for "\n"
         
         f.close()
-        print("lines read: ", lines)
+        # print("lines read: ", lines)
             
         return lines
 
@@ -272,7 +273,7 @@ class InvertedIndex:
                 term_postings = line.split(" ", 1)
                 term = term_postings[0]
                 postings = term_postings[1]
-                print("added to queue: ", [term, postings, block_index]) 
+                # print("added to queue: ", [term, postings, block_index]) 
                 queue.put([term, postings, block_index])
         return queue
     
@@ -287,7 +288,7 @@ class InvertedIndex:
         return [new_dictionary_line, new_posting_line]
     
     def get_postings_with_skip_pointers(self, accumulated_postings):
-        print("getting skip pointers...")
+        # print("getting skip pointers...")
 
         length = len(accumulated_postings)
         min_skip_length = 9
