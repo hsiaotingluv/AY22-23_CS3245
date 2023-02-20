@@ -12,7 +12,7 @@ from nltk.tokenize import sent_tokenize
 from nltk.stem.porter import PorterStemmer
 
 class InvertedIndex:
-    MAX_LINES_IN_MEM = 100
+    MAX_LINES_IN_MEM = 1000
 
     def __init__(self, in_dir, out_dict, out_postings):
         print("initialising inverted index...")
@@ -23,7 +23,7 @@ class InvertedIndex:
     
     def get_all_doc_ids(self):
         curr_doc_num = 0
-        total_doc_num = 3
+        total_doc_num = 20
 
         all_doc_ids = []
         for doc_id in os.listdir(self.in_dir):
@@ -281,10 +281,28 @@ class InvertedIndex:
         new_dictionary_line = prev_term + " " + str(len(accumulated_postings)) + " " + str(posting_ref) + "\n"
     
         # term DocIDs...
-        new_posting_line = prev_term + " " + ' '.join(accumulated_postings) + "\n"
+        postings_with_skip_pointers = self.get_postings_with_skip_pointers(accumulated_postings)
+        new_posting_line = prev_term + " " + postings_with_skip_pointers + "\n"
 
         return [new_dictionary_line, new_posting_line]
     
-        
+    def get_postings_with_skip_pointers(self, accumulated_postings):
+        print("getting skip pointers...")
 
-        
+        length = len(accumulated_postings)
+        min_skip_length = 9
+
+        # do not add skip pointers if length of postings is smaller than min_skip_length
+        if (length < min_skip_length):
+            return ' '.join(accumulated_postings)
+
+        postings_with_skip_pointers = ""
+        skip_len = floor(sqrt(length))
+
+        for i in range (0, length):
+            if (i % skip_len == 0):
+                postings_with_skip_pointers += accumulated_postings[i] + "| "
+            else:
+                postings_with_skip_pointers += accumulated_postings[i] + " "
+
+        return postings_with_skip_pointers
