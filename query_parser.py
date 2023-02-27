@@ -1,7 +1,19 @@
+from boolean_query import AndQuery, OrQuery
+
 class QueryParser:
     
-    @classmethod
-    def shunting_yard(cls, query):
+    def __init__(self, dictionary, postings_file):
+        print('Starting search...')
+        self.dictionary = dictionary
+        self.postings_file = postings_file
+        self.ANDquery = AndQuery(dictionary, postings_file)
+        self.ORquery = OrQuery(dictionary, postings_file)
+
+    '''
+    Returns a postfix notation expression to be evaluated
+    '''
+    def shunting_yard(self, query):
+        print("Beginning Shunting Yard Algorithm")
 
         # Operator precedence dictionary
         precedence = {"(": 3, ")": 3, "NOT": 2, "AND": 1, "OR": 0}
@@ -61,34 +73,60 @@ class QueryParser:
         # Return the postfix notation as a string
         return " ".join(output_queue)
 
-    @classmethod
-    def evaluatePostfix(cls, postfix_expression):
+
+    '''
+    Returns the matching postings to be written
+    '''
+    def evaluatePostfix(self, postfix_expression):
+        print("Beginning Postfix evaluation")        
         
         # Create an empty stack for operands 
         postings_stack = []
 
         # Tokenize the postfix expression
         tokens = postfix_expression.split()
+        print(tokens)
 
         # Loop over the tokens in the expression
         for token in tokens:
+            '''
+            token is either a 'term' to be retrieved from the dictionary, or 
+            an array containing a single string of postings
+            '''
 
             if token == "AND":
+                # Pop the two top operands and apply the OR operator
                 postings1 = postings_stack.pop()
                 postings2 = postings_stack.pop()
-                result = operand1 
+                result = self.ANDquery.eval(postings1, postings2)
+                postings_stack.append(result) 
 
             elif token == "OR":
+                # Pop the two top operands and apply the OR operator
+                postings1 = postings_stack.pop()
+                postings2 = postings_stack.pop()
+                result = self.ORquery.eval(postings1, postings2)
+                postings_stack.append(result) 
 
-            elif token == "NOT":
-
+            # elif token == "NOT":
+            #     # Pop the top operand and apply the NOT operator
+            #     postings = postings_stack.pop()
+            #     # result = # NOT_query
+            #     postings_stack.append(result)
+                
             else: 
                 # Token is an operand, append to stack
-                postings_stack.append(result)
+                postings_stack.append(token)
 
-query = "term1 AND term2 OR (term3 AND NOT term4)"
-postfix_notation = QueryParser.shunting_yard(query)  
-print(postfix_notation)
+        # At the end of the loop, the final result of the expression is on top of the stack
+        return postings_stack[-1]
+
+
+
+
+# query = "term1 AND term2 OR (term3 AND NOT term4)"
+# postfix_notation = QueryParser.shunting_yard(query)  
+# print(postfix_notation)
 
 
     

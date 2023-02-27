@@ -65,12 +65,13 @@ class InvertedIndex:
                 for sentence_token in sent_tokenize(line):
                     for word_token in word_tokenize(sentence_token):
                         # remove punctuation and digit, stem and case-folding
+                        # Is there a need to remove punctuation and digits? 
                         word_token = stemmer.stem(
                             word_token.translate(remove_punctuation).translate(remove_digit)).lower()
 
                         # remove numbers, stop words or empty strings
                         if word_token.isnumeric() or word_token in stop_words or len(word_token) == 0:
-                            continue
+                            continue # What does this do? Skips remaining code
 
                         # add word_token into list of terms
                         if word_token not in terms:
