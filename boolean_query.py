@@ -1,11 +1,12 @@
-class AndQuery:
-
-    def __init__(self, dictionary, postings_file) :
+class BooleanQuery:
+    def __init__(self, dictionary, postings_file):
         self.dictionary = dictionary
         self.postings_file = postings_file
-    
-    def term_to_doc_ids(self, postings):
 
+    '''
+    Returns a list of docIDs as integers 
+    '''
+    def term_to_doc_ids(self, postings):
         # If postings is a term, retrieve postings list
         if (not isinstance(postings, list)):    
 
@@ -21,9 +22,13 @@ class AndQuery:
             # Put the postings into a list 
             p1_doc_ids = p1_as_string.split()
             postings = p1_doc_ids[1:]
+            postings = list(map(int, postings))
+
+        return postings # return as tuple, including the doc_freq also (how many documents in this list)
+
+class AndQuery(BooleanQuery):
         
-        return postings # return tuple of doc_freq also
-        
+    # Calls the intersect method
     def eval(self, postings1, postings2):
         print('Parsing AND query...')
 
@@ -63,34 +68,10 @@ class AndQuery:
             j += 1
 
         return common_documents  
-              
+            
+class OrQuery(BooleanQuery):
 
-class OrQuery:
-
-    def __init__(self, dictionary, postings_file) :
-        self.dictionary = dictionary
-        self.postings_file = postings_file
-
-    def term_to_doc_ids(self, postings):
-
-        # If postings is a term, retrieve postings list
-        if (not isinstance(postings, list)):    
-
-            # Locate term in the dictionary
-            doc_frq = self.dictionary[postings][0]
-            pointer = self.dictionary[postings][1]
-
-            # Retrieve postings list
-            f = open(self.postings_file, 'r')
-            f.seek(pointer, 0)
-            p1_as_string = f.readline().strip()
-
-            # Put the postings into a list 
-            p1_doc_ids = p1_as_string.split()
-            postings = p1_doc_ids[1:]
-        
-        return postings # return tuple of doc_freq also
-
+    # Calls the merge method
     def eval(self, postings1, postings2):
         print('Parsing OR query...')
 
@@ -101,15 +82,33 @@ class OrQuery:
         postings2 = self.term_to_doc_ids(postings2)
 
         common_documents = self.merge(postings1, postings2)
-        print (common_documents)
         return common_documents
 
     '''
-    Merge the two postings. 
+    Merge the two postings, the result is a list of documents in ascending order e.g. ['1', '3', '5']
     '''
     def merge(self, p1_doc_ids, p2_doc_ids): 
         common_documents =[]
+        i = 0
+        j = 0
+
+        while i < len(p1_doc_ids) and j < len(p2_doc_ids):
+            if p1_doc_ids[i] < p2_doc_ids[j]:
+                common_documents.append(p1_doc_ids[i])
+                i += 1
+
+            elif p1_doc_ids[i] > p2_doc_ids[j]:
+                common_documents.append(p2_doc_ids[j])
+                j += 1
+
+            elif p1_doc_ids[i] == p2_doc_ids[j]:
+                i += 1
+                j += 1
+            
+        common_documents.extend(p1_doc_ids[i:])
+        common_documents.extend(p2_doc_ids[j:])
+        return common_documents
 
         # NOTE: THIS IS NOT SORTED
-        return list(set(p1_doc_ids + p2_doc_ids))
+        # return list(set(p1_doc_ids + p2_doc_ids))
            
