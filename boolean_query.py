@@ -1,3 +1,6 @@
+'''
+Parent class for the 3 boolean queries. 
+'''
 class BooleanQuery:
     def __init__(self, dictionary, postings_file):
         self.dictionary = dictionary
@@ -26,15 +29,19 @@ class BooleanQuery:
 
         return postings # return as tuple, including the doc_freq also (how many documents in this list)
 
+'''
+Inherits from the BooleanQuery class.
+'''
 class AndQuery(BooleanQuery):
-        
-    # Calls the intersect method
+
+    '''
+    Calls the intersect method
+    '''    
     def eval(self, postings1, postings2):
         print('Parsing AND query...')
 
-        '''
-        The variables postings1 and postings2 could be terms or a list of numbers
-        '''
+
+        # The variables postings1 and postings2 could be terms or a list of numbers
         postings1 = self.term_to_doc_ids(postings1)
         postings2 = self.term_to_doc_ids(postings2)
 
@@ -68,16 +75,20 @@ class AndQuery(BooleanQuery):
             j += 1
 
         return common_documents  
-            
+
+
+'''
+Inherits from the BooleanQuery class.
+'''
 class OrQuery(BooleanQuery):
 
-    # Calls the merge method
+    ''' 
+    Calls the merge method
+    '''
     def eval(self, postings1, postings2):
         print('Parsing OR query...')
 
-        '''
-        The variables postings1 and postings2 could be terms or a list of numbers
-        '''
+        # The variables postings1 and postings2 could be terms or a list of numbers
         postings1 = self.term_to_doc_ids(postings1)
         postings2 = self.term_to_doc_ids(postings2)
 
@@ -111,4 +122,57 @@ class OrQuery(BooleanQuery):
 
         # NOTE: THIS IS NOT SORTED
         # return list(set(p1_doc_ids + p2_doc_ids))
-           
+
+'''
+Inherits from the BooleanQuery class.
+'''
+class NotQuery(BooleanQuery):
+
+    ''' 
+    Calls the get_complement method
+    '''
+    def eval(self, postings):
+        print('Parsing NOT query...')
+
+        # The variables postings could be a term or list of numbers
+        postings = self.term_to_doc_ids(postings)
+        
+        # Get all doc ids
+        f = open("all_doc_ids.txt", 'r')
+        all_docs_in_string = f.readline().strip()
+
+        # Put the docs into a list 
+        all_docs = all_docs_in_string.split()
+        all_docs = list(map(int, all_docs))
+
+        complemented_documents = self.get_complement(postings, all_docs)
+        return complemented_documents
+
+
+    ''' 
+    Merge the two postings, the result is a list of documents in ascending order e.g. ['1', '3', '5']
+    '''
+    def get_complement(self, postings, all_docs): 
+        complement_documents = []
+        i = 0
+        j = 0
+        print(postings, all_docs)
+
+        while i < len(postings):
+
+            # Only one conditional is needed as the doc ids in postings will always be a subset of all the docs. 
+            if postings[i] > all_docs[j]:
+                complement_documents.append(all_docs[j])
+                j += 1
+
+            # Discard this document
+            if postings[i] == all_docs[j]:
+                i += 1
+                j += 1
+
+        # Add the rest of the complemented documents
+        complement_documents.extend(all_docs[j:])
+
+        return complement_documents
+
+

@@ -1,4 +1,4 @@
-from boolean_query import AndQuery, OrQuery
+from boolean_query import AndQuery, OrQuery, NotQuery
 
 class QueryParser:
     
@@ -8,6 +8,7 @@ class QueryParser:
         self.postings_file = postings_file
         self.ANDquery = AndQuery(dictionary, postings_file)
         self.ORquery = OrQuery(dictionary, postings_file)
+        self.NOTquery = NotQuery(dictionary, postings_file)
 
     '''
     Returns a postfix notation expression to be evaluated
@@ -108,11 +109,11 @@ class QueryParser:
                 result = self.ORquery.eval(postings1, postings2)
                 postings_stack.append(result) 
 
-            # elif token == "NOT":
-            #     # Pop the top operand and apply the NOT operator
-            #     postings = postings_stack.pop()
-            #     # result = # NOT_query
-            #     postings_stack.append(result)
+            elif token == "NOT":
+                # Pop the top operand and apply the NOT operator
+                postings = postings_stack.pop()
+                result = self.NOTquery.eval(postings)
+                postings_stack.append(result)
                 
             else: 
                 # Token is an operand, append to stack
