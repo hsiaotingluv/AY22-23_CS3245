@@ -34,6 +34,10 @@ class InvertedIndex:
                 curr_doc_num += 1
         all_doc_ids.sort()
 
+        # Write to a txt file for search to access all doc_ids 
+        with open("all_doc_ids.txt", "w") as file:
+            file.write(" ".join(map(str, all_doc_ids)))
+
         print("all doc id: ", all_doc_ids)
 
         return all_doc_ids
