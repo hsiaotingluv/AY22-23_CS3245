@@ -4,6 +4,9 @@ import nltk
 import sys
 import getopt
 
+# from boolean_query import QueryParser
+from query_parser import QueryParser
+
 def usage():
     print("usage: " + sys.argv[0] + " -d dictionary-file -p postings-file -q file-of-queries -o output-file-of-results")
 
@@ -15,6 +18,34 @@ def run_search(dict_file, postings_file, queries_file, results_file):
     print('running search on the queries...')
     # This is an empty method
     # Pls implement your code in below
+
+    # Read dict_file into memory using a python dictionary for O(1) access
+    dictionary = {} 
+
+    f = open(dict_file, 'r')
+    for dictionary_entry in f:
+        elements = dictionary_entry.split() 
+        term = elements[0]
+        doc_freq = elements[1]
+        pointer = int(elements[2])
+        dictionary[term] = (doc_freq, pointer)
+
+    # Parse queries
+    parser = QueryParser(dictionary, postings_file)
+
+    # Go through each query
+    with open(queries_file, 'r') as file:
+        for query in file:
+            # Parse the query
+            print(query)
+            postfix_query = parser.shunting_yard(query)
+
+            # Get the return value
+            result_postings = parser.evaluatePostfix(postfix_query)
+
+            # Write the output result
+            print(result_postings)
+
 
 dictionary_file = postings_file = file_of_queries = output_file_of_results = None
 
