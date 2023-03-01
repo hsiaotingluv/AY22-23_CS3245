@@ -7,7 +7,7 @@ class BooleanQuery:
         self.postings_file = postings_file
 
     '''
-    Returns a list of docIDs as integers 
+    Returns a list of docIDs as strings, e.g. ["1", "5|3", "7" ...]
     '''
     def term_to_doc_ids(self, postings):
         # If postings is a term, retrieve postings list
@@ -28,6 +28,23 @@ class BooleanQuery:
 
         # Return as a list of strings
         return postings
+    
+    '''
+    Checks if string "2" has skip pointer
+    '''
+    def has_skip_pointer(self, s):
+        if "|" in s:
+            return True
+        return False
+    
+    '''
+    Takes a string such as "5|3" and returns a tuple of both as ints 
+    '''
+    def process_doc_id_with_skip(self, s):
+        parts = s.split("|")
+        doc_id = int(parts[0])
+        doc_skip = int(parts[1])
+        return (doc_id, doc_skip)
 
 '''
 Inherits from the BooleanQuery class.
@@ -39,7 +56,6 @@ class AndQuery(BooleanQuery):
     '''    
     def eval(self, postings1, postings2):
         print('Parsing AND query...')
-
 
         # The variables postings1 and postings2 could be terms or a list of numbers
         postings1 = self.term_to_doc_ids(postings1)
@@ -78,36 +94,34 @@ class AndQuery(BooleanQuery):
         doc2_id = None
         doc1_skip = 0
         doc2_skip = 0
-        # p1_doc_ids has the structure [12002| 12806 13949 342 518 941| 1312] as STRINGS
+        # p1_doc_ids has the structure ["1", "5|3", "7" ...] as STRINGS
 
         while (i < len1 and j < len2): 
 
             # Check for skip pointer
-            if "|" in p1_doc_ids[i]: 
-                parts = p1_doc_ids[i].split("|")
-                doc1_id = parts[0]
-                doc1_skip = int(parts[1])
+            if self.has_skip_pointer(p1_doc_ids[i]): 
+                tuple = self.process_doc_id_with_skip(p1_doc_ids[i])
+                doc1_id = tuple[0]
+                doc1_skip = tuple[1]
             else:
-                doc1_id = p1_doc_ids[i]
+                doc1_id = int(p1_doc_ids[i])
                 doc1_skip = 0
 
-            if "|" in p2_doc_ids[j]: 
-                parts = p2_doc_ids[j].split("|")
-                doc2_id = parts[0]
-                doc2_skip = int(parts[1])
+            if self.has_skip_pointer(p2_doc_ids[j]): 
+                tuple = self.process_doc_id_with_skip(p2_doc_ids[j])
+                doc2_id = tuple[0]
+                doc2_skip = tuple[1]
             else:
-                doc2_id = p2_doc_ids[j]
+                doc2_id = int(p2_doc_ids[j])
                 doc2_skip = 0
 
-            print(doc1_id, doc1_skip)
-
             # Matched postings
-            if int(doc1_id) == int(doc2_id):
-                common_documents.append(doc1_id)
+            if doc1_id == doc2_id:
+                common_documents.append(str(doc1_id))
                 i += 1
                 j += 1
 
-            elif int(doc1_id) < int(doc2_id):
+            elif doc1_id < doc2_id:
                 # If there is a skip, and the skipped to element is smaller than doc2, take it 
                 # if doc1_skip != 0 and self.get_doc_id(p1_doc_ids[i + doc1_skip])[0] <= int(doc2_id):
                 #     while (p1_doc_ids[i + doc1_skip])
@@ -170,33 +184,35 @@ class OrQuery(BooleanQuery):
         while i < len(p1_doc_ids) and j < len(p2_doc_ids):
 
             # Strip the doc_id string
-            if "|" in p1_doc_ids[i]: 
-                parts = p1_doc_ids[i].split("|")
-                doc1_id = parts[0]
+            if self.has_skip_pointer(p1_doc_ids[i]):
+                tuple = self.process_doc_id_with_skip(p1_doc_ids[i])
+                doc1_id = tuple[0]
+            else:
+                doc1_id = int(p1_doc_ids[i])
 
-            if "|" in p2_doc_ids[j]: 
-                parts = p2_doc_ids[j].split("|")
-                doc2_id = parts[0]
+            if self.has_skip_pointer(p2_doc_ids[j]):
+                tuple = self.process_doc_id_with_skip(p2_doc_ids[j])
+                doc2_id = tuple[0]
+            else:
+                doc2_id = int(p2_doc_ids[j])
+
 
             # Merge
-            if int(doc1_id) < int(doc2_id):
-                common_documents.append(doc1_id)
+            if doc1_id < doc2_id:
+                common_documents.append(str(doc1_id))
                 i += 1
 
-            elif int(doc1_id) > int(doc2_id):
-                common_documents.append(p2_doc_ids[j])
+            elif doc1_id > doc2_id:
+                common_documents.append(str(doc2_id))
                 j += 1
 
-            elif int(doc1_id) == int(doc2_id):
+            elif doc1_id == doc2_id:
                 i += 1
                 j += 1
             
-        common_documents.extend(id.strip("|") for id in p1_doc_ids[i:])
-        common_documents.extend(id.strip("|") for id in p2_doc_ids[j:])
+        common_documents.extend(id.split("|")[0] for id in p1_doc_ids[i:])
+        common_documents.extend(id.split("|")[0] for id in p2_doc_ids[j:])
         return common_documents
-
-        # NOTE: THIS IS NOT SORTED
-        # return list(set(p1_doc_ids + p2_doc_ids))
 
 '''
 Inherits from the BooleanQuery class.
@@ -218,7 +234,7 @@ class NotQuery(BooleanQuery):
 
         # Put the docs into a list 
         all_docs = all_docs_in_string.split()
-        all_docs = list(map(int, all_docs))
+        # all_docs = list(map(int, all_docs)) ---> leave as strings
 
         complemented_documents = self.get_complement(postings, all_docs)
         return complemented_documents
@@ -231,29 +247,32 @@ class NotQuery(BooleanQuery):
         complement_documents = []
         i = 0
         j = 0
-        doc_id = ""
+        doc_id = 0
         # print("Complementing this ", postings)
 
         while i < len(postings):
 
-            if "|" in postings[i]: 
-                parts = postings[i].split("|")
-                doc_id = parts[0]
+            print(postings[i])
+
+            if self.has_skip_pointer(postings[i]): 
+                doc_id = self.process_doc_id_with_skip(postings[i])[0]
+                print(doc_id, all_docs[j])
+
             else: 
-                doc_id = postings[i]
+                doc_id = int(postings[i])
 
             # Only one conditional is needed as the doc ids in postings will always be a subset of all the docs. 
-            if int(doc_id) > all_docs[j]:
-                complement_documents.append(str(all_docs[j]))
+            if doc_id > int(all_docs[j]):
+                complement_documents.append(all_docs[j])
                 j += 1
 
             # Discard this document
-            if postings[i] == all_docs[j]:
+            if doc_id == int(all_docs[j]):
                 i += 1
                 j += 1
 
         # Add the rest of the complemented documents
-        complement_documents.extend(list(map(str, all_docs[j:])))
+        complement_documents.extend(all_docs[j:])
 
         return complement_documents
 
