@@ -140,7 +140,9 @@ class QueryParser:
 
         # At the end of the loop, the final result of the expression is on top of the stack
         print("Final result is: ", postings_stack[-1])
-        return postings_stack[-1]
+        # return (postings_stack[-1]).replace("|", "")
+    
+        return (" ".join(map(str, postings_stack[-1]))).replace("|", "")
 
 
 

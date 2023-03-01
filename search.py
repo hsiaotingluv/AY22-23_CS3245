@@ -52,13 +52,13 @@ def run_search(dict_file, postings_file, queries_file, results_file):
             if is_first_line: 
                 # Creating new file
                 with open(results_file, "w") as file:
-                    file.write(" ".join(map(str, result_postings)))
+                    file.write(result_postings)
                     file.close()
                     is_first_line = False
 
             else:
                 with open(results_file, "a") as file:
-                    file.write("\n" + " ".join(map(str, result_postings)))
+                    file.write("\n" + result_postings)
                     file.close()
             
 
