@@ -1,4 +1,4 @@
-from boolean_query import AndQuery, OrQuery, NotQuery
+from boolean_query import BooleanQuery, AndQuery, OrQuery, NotQuery
 
 class QueryParser:
     
@@ -6,6 +6,7 @@ class QueryParser:
         print('Starting search...')
         self.dictionary = dictionary
         self.postings_file = postings_file
+        self.BooleanQuery = BooleanQuery(dictionary, postings_file)
         self.ANDquery = AndQuery(dictionary, postings_file)
         self.ORquery = OrQuery(dictionary, postings_file)
         self.NOTquery = NotQuery(dictionary, postings_file)
@@ -117,9 +118,11 @@ class QueryParser:
                 
             else: 
                 # Token is an operand, append to stack
+                token =self.BooleanQuery.term_to_doc_ids(token)
                 postings_stack.append(token)
 
         # At the end of the loop, the final result of the expression is on top of the stack
+        print(postings_stack[-1])
         return postings_stack[-1]
 
 
