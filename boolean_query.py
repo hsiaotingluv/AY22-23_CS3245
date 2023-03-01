@@ -12,19 +12,19 @@ class BooleanQuery:
     def term_to_doc_ids(self, postings):
         # If postings is a term, retrieve postings list
         if (not isinstance(postings, list)):    
-
-            # Locate term in the dictionary
+            
+            # Locate term in the dictionary --> WHAT IF IT'S NOT INSIDE? NEED TO CATCH RIGHT? 
             doc_frq = self.dictionary[postings][0]
             pointer = self.dictionary[postings][1]
 
             # Retrieve postings list
             f = open(self.postings_file, 'r')
             f.seek(pointer, 0)
-            p1_as_string = f.readline().strip()
+            postings_as_string = f.readline().strip()
 
             # Put the postings into a list 
-            p1_doc_ids = p1_as_string.split()
-            postings = p1_doc_ids[1:]
+            doc_ids = postings_as_string.split()
+            postings = doc_ids[1:]
             postings = list(map(int, postings))
 
         return postings # return as tuple, including the doc_freq also (how many documents in this list)
@@ -54,8 +54,7 @@ class AndQuery(BooleanQuery):
     '''   
     def intersect(self, p1_doc_ids, p2_doc_ids):
         common_documents = []
-        print(p1_doc_ids, p2_doc_ids)
-
+        # print("Intersecting these two: ", p1_doc_ids, p2_doc_ids)
         i = j = 0
         len1 = len(p1_doc_ids)
         len2 = len(p2_doc_ids)
@@ -68,7 +67,25 @@ class AndQuery(BooleanQuery):
             i += 1
             j += 1
 
-          elif int(p1_doc_ids[i]) < int(p2_doc_ids[i]):
+          elif p1_doc_ids[i] < p2_doc_ids[j]:
+            # If p1_doc_ids[i] has a skip pointer, take it
+
+                # If new element is < p2_doc_ids[j] --> repeat loop
+
+                # If new element == p2_doc_ids[j] --> add 
+
+                # Else, don't take skip pointer
+
+            # ----
+            # curr_doc = p1_doc_ids[i]
+            # while curr_doc has a skip pointer
+                # Take it, check if < p2_doc_ids[j], update curr_doc
+
+                # If == , add to common_docs
+                #add both
+
+                # If >, 
+
             i += 1
 
           else:
@@ -102,6 +119,8 @@ class OrQuery(BooleanQuery):
         common_documents =[]
         i = 0
         j = 0
+
+        print("Merging these two: ", p1_doc_ids, p2_doc_ids)
 
         while i < len(p1_doc_ids) and j < len(p2_doc_ids):
             if p1_doc_ids[i] < p2_doc_ids[j]:
@@ -156,7 +175,7 @@ class NotQuery(BooleanQuery):
         complement_documents = []
         i = 0
         j = 0
-        print(postings, all_docs)
+        # print("Complementing this ", postings)
 
         while i < len(postings):
 
