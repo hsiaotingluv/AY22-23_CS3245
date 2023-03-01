@@ -65,7 +65,7 @@ class InvertedIndex:
         Construct the indexing of all terms and their postings
         """
         self.reset_files()
-        
+
         print("constructing index...")
         stemmer = PorterStemmer()
         # stop_words = set(stopwords.words('english'))
@@ -178,7 +178,7 @@ class InvertedIndex:
         while not queue.empty():
             item = queue.get()
             curr_term = item[0]
-            curr_postings = item[1].split()
+            curr_postings = item[1].split() # a list of string
             curr_block_index = item[2]
 
             line_in_mem_per_block[curr_block_index] -= 1
@@ -189,12 +189,12 @@ class InvertedIndex:
                 for doc_id in curr_postings:
                     # if doc_id does not exists in current posting yet, add into posting
                     if doc_id not in accumulated_postings:
-                        accumulated_postings.extend(curr_postings)
+                        accumulated_postings.append(doc_id)
 
             # if new term, append previous term to final dictionary and postings
             if (curr_term != prev_term):
                 # create and get new lines for dictionary and posting (with skip pointers)
-                new_dictionary_posting_line = self.new_line(prev_term, accumulated_postings, posting_ref)
+                new_dictionary_posting_line = self.new_line(prev_term, self.sort_postings(accumulated_postings), posting_ref)
                 final_dictionary += new_dictionary_posting_line[0]
                 final_postings += new_dictionary_posting_line[1]
                 # update posting reference by adding length of new posting line (with skip pointers)
@@ -310,7 +310,7 @@ class InvertedIndex:
 
             Parameters:
                 prev_term: a string
-                accumulated_postings: a list of integer
+                accumulated_postings: a list of string
                 posting_ref: an integer
             
             Returns:
@@ -330,7 +330,7 @@ class InvertedIndex:
         Method to calculate and get postings with skip pointers
 
             Parameters:
-                accumulated_postings: a list of integer
+                accumulated_postings: a list of string
             
             Returns:
                 A string of posting list with skip pointers
@@ -352,3 +352,20 @@ class InvertedIndex:
                 postings_with_skip_pointers += accumulated_postings[i] + " "
 
         return postings_with_skip_pointers
+
+    def sort_postings(self, accumulated_postings):
+        """
+        Method to sort postings
+        
+            Parameters:
+                accumulated_postings: a list of string
+
+            Returns:
+                A list of sorted postings
+        """
+        list_of_sorted_ids = []
+        for doc_id in accumulated_postings:
+            list_of_sorted_ids.append(int(doc_id))
+        list_of_sorted_ids.sort()
+        result = [str(i) for i in list_of_sorted_ids]
+        return result
