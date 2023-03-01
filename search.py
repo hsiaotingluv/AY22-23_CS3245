@@ -35,6 +35,9 @@ def run_search(dict_file, postings_file, queries_file, results_file):
 
     # Go through each query
     with open(queries_file, 'r') as file:
+
+        is_first_line = True
+
         for query in file:
             # Parse the query
             print(query)
@@ -44,7 +47,20 @@ def run_search(dict_file, postings_file, queries_file, results_file):
             result_postings = parser.evaluatePostfix(postfix_query)
 
             # Write the output result
-            print(result_postings)
+            print ("Writing result of query to file")
+
+            if is_first_line: 
+                # Creating new file
+                with open(results_file, "w") as file:
+                    file.write(" ".join(map(str, result_postings)))
+                    file.close()
+                    is_first_line = False
+
+            else:
+                with open(results_file, "a") as file:
+                    file.write("\n" + " ".join(map(str, result_postings)))
+                    file.close()
+            
 
 
 dictionary_file = postings_file = file_of_queries = output_file_of_results = None
