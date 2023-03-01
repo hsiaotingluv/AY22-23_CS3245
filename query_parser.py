@@ -1,4 +1,7 @@
 from boolean_query import BooleanQuery, AndQuery, OrQuery, NotQuery
+from nltk.stem.porter import PorterStemmer
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 
 class QueryParser:
     
@@ -66,7 +69,13 @@ class QueryParser:
 
             else: 
                 # Token is an operand, push onto output queue
-                output_queue.append(token)
+                # Stem and tokenize the term
+                stemmer = PorterStemmer()
+                stop_words = set(stopwords.words('english'))
+                word_token = word_tokenize(token)
+                word_token = stemmer.stem(word_token[0].lower())
+                
+                output_queue.append(word_token)
 
         # Pop remaining operators from stack to output queue
         while operator_stack:
@@ -87,7 +96,7 @@ class QueryParser:
 
         # Tokenize the postfix expression
         tokens = postfix_expression.split()
-        print(tokens)
+        print("This is the postfix expression: ", tokens)
 
         # Loop over the tokens in the expression
         for token in tokens:
@@ -97,7 +106,15 @@ class QueryParser:
             '''
 
             if token == "AND":
-                # Pop the two top operands and apply the OR operator
+
+                # Optimisation ----
+
+                # Recursively call itself
+
+
+                # Optimisation ----
+
+                # Pop the two top operands and apply the AND operator
                 postings1 = postings_stack.pop()
                 postings2 = postings_stack.pop()
                 result = self.ANDquery.eval(postings1, postings2)
@@ -122,7 +139,7 @@ class QueryParser:
                 postings_stack.append(token)
 
         # At the end of the loop, the final result of the expression is on top of the stack
-        print(postings_stack[-1])
+        print("Final result is: ", postings_stack[-1])
         return postings_stack[-1]
 
 

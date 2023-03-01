@@ -40,14 +40,14 @@ def run_search(dict_file, postings_file, queries_file, results_file):
 
         for query in file:
             # Parse the query
-            print(query)
+            print("This is the query: ", query)
             postfix_query = parser.shunting_yard(query)
 
             # Get the return value
             result_postings = parser.evaluatePostfix(postfix_query)
 
             # Write the output result
-            print ("Writing result of query to file")
+            print ("Writing result of query to file... \n")
 
             if is_first_line: 
                 # Creating new file
