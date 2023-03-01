@@ -2,6 +2,7 @@ from boolean_query import BooleanQuery, AndQuery, OrQuery, NotQuery
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+import string
 
 class QueryParser:
     
@@ -71,10 +72,10 @@ class QueryParser:
                 # Token is an operand, push onto output queue
                 # Stem and tokenize the term
                 stemmer = PorterStemmer()
-                stop_words = set(stopwords.words('english'))
-                word_token = word_tokenize(token)
-                word_token = stemmer.stem(word_token[0].lower())
-                
+                remove_punctuation = str.maketrans('', '', string.punctuation)
+                remove_digit = str.maketrans("", "", string.digits)
+
+                word_token = stemmer.stem(token.translate(remove_punctuation).translate(remove_digit)).lower()
                 output_queue.append(word_token)
 
         # Pop remaining operators from stack to output queue
@@ -107,12 +108,9 @@ class QueryParser:
 
             if token == "AND":
 
-                # Optimisation ----
-
-                # Recursively call itself
-
-
-                # Optimisation ----
+                # -- Optimisation --
+                # Recursively call itself?
+                # ------------------
 
                 # Pop the two top operands and apply the AND operator
                 postings1 = postings_stack.pop()
@@ -135,6 +133,7 @@ class QueryParser:
                 
             else: 
                 # Token is an operand, append to stack
+                # Token is either a TERM or a posting list of docIDs ["12", "14", ...]
                 token =self.BooleanQuery.term_to_doc_ids(token)
                 postings_stack.append(token)
 
