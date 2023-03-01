@@ -48,18 +48,19 @@ def run_search(dict_file, postings_file, queries_file, results_file):
 
             # Write the output result
             print ("Writing result of query to file... \n")
+            print (result_postings)
 
             if is_first_line: 
                 # Creating new file
-                with open(results_file, "w") as file:
-                    file.write(result_postings)
-                    file.close()
+                with open(results_file, "w") as f:
+                    f.write(result_postings)
+                    f.close()
                     is_first_line = False
 
             else:
-                with open(results_file, "a") as file:
-                    file.write("\n" + result_postings)
-                    file.close()
+                with open(results_file, "a") as f:
+                    f.write("\n" + result_postings)
+                    f.close()
             
 
 
