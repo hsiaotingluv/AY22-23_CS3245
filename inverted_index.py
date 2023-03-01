@@ -11,6 +11,10 @@ from nltk.tokenize import sent_tokenize
 from nltk.stem.porter import PorterStemmer
 
 class InvertedIndex:
+    """
+    Class that construct and write data from in_dir into out_dict and out_postings. 
+    Using SPIMI-Invert method, we construct dictionary and postings in blocks, then use n-way merging to merge the blocks in order.
+    """
     # max 10000 number of terms in memory
     MAX_LINES_IN_MEM = 10000
 
