@@ -1,15 +1,11 @@
-This is the README file for A0222182R's submission
-Email(s): e0559714@u.nus.edu
+This is the README file for A0222182R's and A0222371R's submission
+Email(s): e0559714@u.nus.edu and 
 
 == Python Version ==
 
 I'm (We're) using Python Version <3.10.9> for this assignment.
 
 == General Notes about this assignment ==
-
-Give an overview of your program, describe the important algorithms/steps 
-in your program, and discuss your experiments in general.  A few paragraphs 
-are usually sufficient.
 
 ###Description
 This program implements indexing and searching techniques for Boolean retrieval from a set of training data given to it. It is capable of finding all docIDs in the training data that satisfy all the conditions stated in the Boolean retrieval. 
@@ -45,15 +41,21 @@ When the number of terms or lines in memory reaches MAX_LINES_IN_MEM, we write o
 
 == Files included with this submission ==
 
-List the files in your submission here and provide a short 1 line
-description of each file.  Make sure your submission's files are named
-and formatted correctly.
+1. README.txt - a summary write up about the program, how to run and how it works
+2. index.py - the main program to run the indexing, which calls inverted_index.py
+3. inverted_index.py - contains the methods to create inverted index using SPIMI algorithm, and merge the results in order with n-way merging
+4. search.py - the main program to run the searching, which calls query_parser.py
+5. query_parser.py - contains the methods to parse query using shunting yard algorithm and calls boolean_query.py for evaluation
+6. boolean_query.py - contains BooleanQuery classes to evaluate AND, OR and NOT query and return the common documents that satisfy the boolean conditions
+7. dictionary.txt - a dictionary text file containing term, term frequency and posting reference
+8. postings.txt - a posting text file containing term and a list of document ids with skip pointer '|number_of_skip_step'
+9. all_doc_ids.txt - a text file containing all the document ids
 
 == Statement of individual work ==
 
 Please put a "x" (without the double quotes) into the bracket of the appropriate statement.
 
-[x] I/We, A0222182R, certify that I/we have followed the CS 3245 Information
+[x] I/We, A0222182R, A0222371R, certify that I/we have followed the CS 3245 Information
 Retrieval class guidelines for homework assignments.  In particular, I/we
 expressly vow that I/we have followed the Facebook rule in discussing
 with others in doing the assignment and did not take notes (digital or
