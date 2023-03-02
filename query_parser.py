@@ -138,6 +138,8 @@ class QueryParser:
                 # Token is an operand, append to stack
                 # Token is either a TERM or a posting list of docIDs ["12", "14", ...]
                 token =self.BooleanQuery.term_to_doc_ids(token)
+                if isinstance(token, list):
+                    token = [id.split("|")[0] for id in token]
                 postings_stack.append(token)
 
         # At the end of the loop, the final result of the expression is on top of the stack
