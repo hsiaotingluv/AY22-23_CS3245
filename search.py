@@ -42,18 +42,18 @@ def run_search(dict_file, postings_file, queries_file, results_file):
 
             try: 
                 # Parse the query
-                print("This is the query: ", query)
+                # print("This is the query: ", query)
                 postfix_query = parser.shunting_yard(query)
 
                 # Get the return value
                 result_postings = parser.evaluatePostfix(postfix_query)
 
                 # Write the output result
-                print ("Writing result of query to file... \n")
+                # print ("Writing result of query to file... \n")
                 # print (result_postings)
             except: 
                 result_postings = "INVALID QUERY"
-                print(result_postings)
+                # print(result_postings)
 
 
             if is_first_line: 

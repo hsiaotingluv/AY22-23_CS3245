@@ -8,7 +8,7 @@ import string
 class QueryParser:
     
     def __init__(self, dictionary, postings_file):
-        print('Starting search...')
+        # print('Starting search...')
         self.dictionary = dictionary
         self.postings_file = postings_file
         self.BooleanQuery = BooleanQuery(dictionary, postings_file)
@@ -20,7 +20,7 @@ class QueryParser:
     Returns a postfix notation expression to be evaluated
     '''
     def shunting_yard(self, query):
-        print("Beginning Shunting Yard Algorithm")
+        # print("Beginning Shunting Yard Algorithm")
 
         # Operator precedence dictionary
         precedence = {"(": 3, ")": 3, "NOT": 2, "AND": 1, "OR": 0}
@@ -93,14 +93,14 @@ class QueryParser:
     Returns the matching postings to be written
     '''
     def evaluatePostfix(self, postfix_expression):
-        print("Beginning Postfix evaluation")        
+        # print("Beginning Postfix evaluation")        
         
         # Create an empty stack for operands 
         postings_stack = []
 
         # Tokenize the postfix expression
         tokens = postfix_expression.split()
-        print("This is the postfix expression: ", tokens)
+        # print("This is the postfix expression: ", tokens)
 
         # Loop over the tokens in the expression
         for token in tokens:

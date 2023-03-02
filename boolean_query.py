@@ -55,7 +55,7 @@ class AndQuery(BooleanQuery):
     Calls the intersect method
     '''    
     def eval(self, postings1, postings2):
-        print('Parsing AND query...')
+        # print('Parsing AND query...')
 
         # The variables postings1 and postings2 could be terms or a list of numbers
         # postings1 = self.term_to_doc_ids(postings1)
@@ -161,7 +161,7 @@ class OrQuery(BooleanQuery):
     Calls the merge method
     '''
     def eval(self, postings1, postings2):
-        print('Parsing OR query...')
+        # print('Parsing OR query...')
 
         # The variables postings1 and postings2 could be terms or a list of numbers
         # postings1 = self.term_to_doc_ids(postings1)
@@ -225,7 +225,7 @@ class NotQuery(BooleanQuery):
     Calls the get_complement method
     '''
     def eval(self, postings):
-        print('Parsing NOT query...')
+        # print('Parsing NOT query...')
 
         # The variables postings could be a term or list of numbers
         # postings = self.term_to_doc_ids(postings)
@@ -254,11 +254,11 @@ class NotQuery(BooleanQuery):
 
         while i < len(postings):
 
-            print(postings[i])
+            # print(postings[i])
 
             if self.has_skip_pointer(postings[i]): 
                 doc_id = self.process_doc_id_with_skip(postings[i])[0]
-                print(doc_id, all_docs[j])
+                # print(doc_id, all_docs[j])
 
             else: 
                 doc_id = int(postings[i])
