@@ -1,5 +1,5 @@
 This is the README file for A0222182R's and A0222371R's submission
-Email(s): e0559714@u.nus.edu and 
+Email(s): e0559714@u.nus.edu and e0559903@u.nus.edu
 
 == Python Version ==
 
