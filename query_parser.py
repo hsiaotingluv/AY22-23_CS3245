@@ -137,23 +137,17 @@ class QueryParser:
             else: 
                 # Token is an operand, append to stack
                 # Token is either a TERM or a posting list of docIDs ["12", "14", ...]
+
+                # If it's a list, it won't have the skip pointers. 
+                # If it's a term, need to add it to unstrip anyway... 
+
                 token =self.BooleanQuery.term_to_doc_ids(token)
-                if isinstance(token, list):
-                    token = [id.split("|")[0] for id in token]
                 postings_stack.append(token)
 
         # At the end of the loop, the final result of the expression is on top of the stack
-        print("Final result is: ", postings_stack[-1])
-        # return (postings_stack[-1]).replace("|", "")
-    
-        return (" ".join(map(str, postings_stack[-1]))).replace("|", "")
-
-
-
-
-# query = "term1 AND term2 OR (term3 AND NOT term4)"
-# postfix_notation = QueryParser.shunting_yard(query)  
-# print(postfix_notation)
+        # return (" ".join(map(str, postings_stack[-1]))).replace("|", "")
+        result = [id.split("|")[0] for id in postings_stack[-1]]
+        return (" ".join(result))
 
 
     
