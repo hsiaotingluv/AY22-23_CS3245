@@ -268,8 +268,7 @@ class InvertedIndex:
             if len(line) == 0:
                 break
             lines.append(line)
-        
-        start_offset_per_block[block_index] = f.tell() + 1 # add 1 for "\n"
+            start_offset_per_block[block_index] += len(line) + 1 # add 1 for "\n"
         
         f.close()
             
