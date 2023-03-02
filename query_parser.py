@@ -2,6 +2,7 @@ from boolean_query import BooleanQuery, AndQuery, OrQuery, NotQuery
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.tokenize import sent_tokenize
 import string
 
 class QueryParser:
@@ -75,7 +76,9 @@ class QueryParser:
                 remove_punctuation = str.maketrans('', '', string.punctuation)
                 remove_digit = str.maketrans("", "", string.digits)
 
-                word_token = stemmer.stem(token.translate(remove_punctuation).translate(remove_digit)).lower()
+                word_token = sent_tokenize(token)
+                word_token = word_tokenize(word_token[0])
+                word_token = stemmer.stem(word_token[0].translate(remove_punctuation).translate(remove_digit)).lower()
                 output_queue.append(word_token)
 
         # Pop remaining operators from stack to output queue
