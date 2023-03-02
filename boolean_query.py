@@ -58,8 +58,8 @@ class AndQuery(BooleanQuery):
         print('Parsing AND query...')
 
         # The variables postings1 and postings2 could be terms or a list of numbers
-        postings1 = self.term_to_doc_ids(postings1)
-        postings2 = self.term_to_doc_ids(postings2)
+        # postings1 = self.term_to_doc_ids(postings1)
+        # postings2 = self.term_to_doc_ids(postings2)
 
         common_documents = self.intersect(postings1, postings2)
         return common_documents
@@ -124,11 +124,11 @@ class AndQuery(BooleanQuery):
             elif doc1_id < doc2_id:
                 # If there is a skip, and the skipped to element is smaller than doc2, take it 
                 # print(self.get_doc_id(p1_doc_ids[i + doc1_skip])[0])
-                if (self.has_skip_pointer(p1_doc_ids[i]) and 
+                if (self.has_skip_pointer(p1_doc_ids[i]) and i + doc1_skip < len1 and
                     self.get_doc_id(p1_doc_ids[i + doc1_skip])[0] <= doc2_id):
 
                     # While there is a skip pointer, take it 
-                    while (self.has_skip_pointer(p1_doc_ids[i]) and
+                    while (self.has_skip_pointer(p1_doc_ids[i]) and i + doc1_skip < len1 and
                         self.get_doc_id(p1_doc_ids[i + doc1_skip])[0] <= doc2_id):
                         i = i + doc1_skip
 
@@ -138,11 +138,11 @@ class AndQuery(BooleanQuery):
 
             else:
                 # If there is a skip, and the skipped to element is smaller than doc2, take it 
-                if (self.has_skip_pointer(p2_doc_ids[j]) and 
+                if (self.has_skip_pointer(p2_doc_ids[j]) and j + doc2_skip < len2 and
                     self.get_doc_id(p2_doc_ids[j + doc2_skip])[0] <= doc1_id):
 
                     # While there is a skip pointer, take it 
-                    while (self.has_skip_pointer(p2_doc_ids[j]) and
+                    while (self.has_skip_pointer(p2_doc_ids[j]) and j + doc2_skip < len2 and
                         self.get_doc_id(p2_doc_ids[j + doc2_skip])[0] <= doc1_id):
                         j = j + doc2_skip
 
@@ -181,7 +181,7 @@ class OrQuery(BooleanQuery):
         doc1_id = None
         doc2_id = None
 
-        print("Merging these two: ", p1_doc_ids, p2_doc_ids)
+        # print("Merging these two: ", p1_doc_ids, p2_doc_ids)
 
         while i < len(p1_doc_ids) and j < len(p2_doc_ids):
 
