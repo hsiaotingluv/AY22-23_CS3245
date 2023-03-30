@@ -233,6 +233,7 @@ class NotQuery(BooleanQuery):
         # Get all doc ids
         f = open("all_doc_ids.txt", 'r')
         all_docs_in_string = f.readline().strip()
+        f.close()
 
         # Put the docs into a list 
         all_docs = all_docs_in_string.split()
