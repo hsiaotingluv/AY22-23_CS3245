@@ -14,20 +14,23 @@ class BooleanQuery:
         if (not isinstance(postings, list)):    
             
             # ADD a check for a key here...
-            
-            # Locate term in the dictionary --> WHAT IF IT'S NOT INSIDE? NEED TO CATCH RIGHT? 
-            doc_frq = self.dictionary[postings][0]
-            pointer = self.dictionary[postings][1]
+            if postings in self.dictionary:
+                # Locate term in the dictionary --> WHAT IF IT'S NOT INSIDE? NEED TO CATCH RIGHT? 
+                print (postings)
+                doc_frq = self.dictionary[postings][0]
+                pointer = self.dictionary[postings][1]
 
-            # Retrieve postings list
-            f = open(self.postings_file, 'r')
-            f.seek(pointer, 0)
-            postings_as_string = f.readline().strip()
+                # Retrieve postings list
+                f = open(self.postings_file, 'r')
+                f.seek(pointer, 0)
+                postings_as_string = f.readline().strip()
 
-            # Put the postings into a list 
-            doc_ids = postings_as_string.split()
-            postings = doc_ids[1:]
+                # Put the postings into a list 
+                doc_ids = postings_as_string.split()
+                postings = doc_ids[1:]
             
+            else:
+                postings = []
             # Else return empty list
 
         # Return as a list of strings
@@ -272,7 +275,7 @@ class NotQuery(BooleanQuery):
                 complement_documents.append(all_docs[j])
                 j += 1
             # Discard this document
-            if doc_id == int(all_docs[j]):
+            elif doc_id == int(all_docs[j]):
                 i += 1
                 j += 1
 
