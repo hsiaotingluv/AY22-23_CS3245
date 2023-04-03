@@ -40,7 +40,7 @@ When the number of terms or lines in memory reaches MAX_LINES_IN_MEM, we write o
 ####Parsing the query
 First, we read from the query.txt file line by line to obtain the various queries. We utilise the shunting yard algorithm as described by Edsger Dijksta. The shunting_yard method in query_parser.py returns a postfix expression which is then evaluated using the method evaluatePostfix in the same QueryParser class. This postfix evaluation checks if the token is a operator or operand, and uses the precedence of the operators to execute them in order. If the token is an operand, the evaluatePostfix method will read it from the dictionary to retrieve the postings list.
 
-#### Boolean operators and postings list retrieval 
+####Boolean operators and postings list retrieval 
 All postings lists are kept and processed as a list of strings, rather than integers to account for the skip pointers which are demarcated with a "|". This retreival from the dictionary is done with the term_to_doc_ids method in the BooleanQuery class in boolean_query.py. 
 
 The AndQuery, OrQuery and NotQuery inherit from the BooleanQuery class. 
@@ -56,7 +56,6 @@ This NOT boolean operator takes the complement of the provided postings list aga
 
 ####Writing to the file
 After the postfix evaluation is done, the resultant list of docIDs is written to the output file. If there is an error in the query, the output will be an INVALID QUERY, done through a try-exception block. 
-
 
 == Files included with this submission ==
 

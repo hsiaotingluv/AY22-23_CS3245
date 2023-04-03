@@ -73,12 +73,9 @@ class QueryParser:
                 # Token is an operand, push onto output queue
                 # Stem and tokenize the term
                 stemmer = PorterStemmer()
-                remove_punctuation = str.maketrans('', '', string.punctuation)
-                remove_digit = str.maketrans("", "", string.digits)
-
                 word_token = sent_tokenize(token)
                 word_token = word_tokenize(word_token[0])
-                word_token = stemmer.stem(word_token[0].translate(remove_punctuation).translate(remove_digit)).lower()
+                word_token = stemmer.stem(word_token[0]).lower()
                 output_queue.append(word_token)
 
         # Pop remaining operators from stack to output queue

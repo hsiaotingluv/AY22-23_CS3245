@@ -72,10 +72,6 @@ class InvertedIndex:
 
         print("constructing index...")
         stemmer = PorterStemmer()
-        # stop_words = set(stopwords.words('english'))
-        remove_punctuation = str.maketrans('', '', string.punctuation)
-        remove_digit = str.maketrans("", "", string.digits)
-
         block_index = 0
         mem_line = 0
         all_doc_ids = self.get_all_doc_ids()
@@ -88,12 +84,11 @@ class InvertedIndex:
             for line in file:
                 for sentence_token in sent_tokenize(line):
                     for word_token in word_tokenize(sentence_token):
-                        # remove punctuation and digit, stem and case-folding
-                        word_token = stemmer.stem(
-                            word_token.translate(remove_punctuation).translate(remove_digit)).lower()
+                        # stem and case-folding
+                        word_token = stemmer.stem(word_token).lower()
 
-                        # remove numbers or empty strings
-                        if word_token.isnumeric() or len(word_token) == 0:
+                        # remove empty strings
+                        if len(word_token) == 0:
                             continue
 
                         # add word_token into list of terms
