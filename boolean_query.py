@@ -233,6 +233,7 @@ class NotQuery(BooleanQuery):
         # Get all doc ids
         f = open("all_doc_ids.txt", 'r')
         all_docs_in_string = f.readline().strip()
+        f.close()
 
         # Put the docs into a list 
         all_docs = all_docs_in_string.split()
@@ -259,7 +260,6 @@ class NotQuery(BooleanQuery):
             if self.has_skip_pointer(postings[i]): 
                 doc_id = self.process_doc_id_with_skip(postings[i])[0]
                 # print(doc_id, all_docs[j])
-
             else: 
                 doc_id = int(postings[i])
 
@@ -267,7 +267,6 @@ class NotQuery(BooleanQuery):
             if doc_id > int(all_docs[j]):
                 complement_documents.append(all_docs[j])
                 j += 1
-
             # Discard this document
             if doc_id == int(all_docs[j]):
                 i += 1
