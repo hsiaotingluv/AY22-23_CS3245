@@ -13,6 +13,8 @@ class BooleanQuery:
         # If postings is a term, retrieve postings list
         if (not isinstance(postings, list)):    
             
+            # ADD a check for a key here...
+            
             # Locate term in the dictionary --> WHAT IF IT'S NOT INSIDE? NEED TO CATCH RIGHT? 
             doc_frq = self.dictionary[postings][0]
             pointer = self.dictionary[postings][1]
@@ -25,6 +27,8 @@ class BooleanQuery:
             # Put the postings into a list 
             doc_ids = postings_as_string.split()
             postings = doc_ids[1:]
+            
+            # Else return empty list
 
         # Return as a list of strings
         return postings
