@@ -16,7 +16,7 @@ class BooleanQuery:
             # ADD a check for a key here...
             if postings in self.dictionary:
                 # Locate term in the dictionary --> WHAT IF IT'S NOT INSIDE? NEED TO CATCH RIGHT? 
-                print (postings)
+                # print (postings)
                 doc_frq = self.dictionary[postings][0]
                 pointer = self.dictionary[postings][1]
 
